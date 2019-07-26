@@ -1,0 +1,71 @@
+group 'com.yangkun.gradle'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'org.akhikhl.gretty'
+//apply from: 'https://raw.github.com/akhikhl/gretty/master/pluginScripts/gretty.plugin'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.akhikhl.gretty:gretty:2.0.0'
+    }
+}
+repositories {
+    mavenCentral()
+}
+if (!project.plugins.findPlugin(org.akhikhl.gretty.GrettyPlugin))
+    project.apply(plugin: org.akhikhl.gretty.GrettyPlugin)
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+gretty {
+    httpPort = 8080
+    contextPath = '/MyGradleDemo'
+    host = "localhost"
+    httpEnabled = true //是否开启http协议
+    servletContainer = "tomcat8" //单双引号无所谓，默认是jetty，我们使用tomcat
+    scanInterval = 1 //tomcat每秒监测，如果发生变化，就让它立刻生效
+    fastReload = true//和scanInterval一起配，立刻生效
+    loggingLevel = "DEBUG"//日志级别
+    consoleLogEnabled = true//日志控制台显示
+
+    debugPort = 8888//调试监听端口，可以不配置，默认5005
+    debugSuspend = true//是否挂起
+    // ... many more properties
+}
+repositories {
+    mavenCentral()
+}
+//私服
+//dependencies {
+//    repositories{
+//        maven{
+//            uri: xxx
+//        }
+//    }
+//}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.mybatis', name: 'mybatis', version: '3.4.6'
+}
+
+tasks.withType(JavaCompile){//指定编码
+    options.encoding = "UTF-8"
+}
+[compileJava,javadoc,compileTestJava]*.options*.encoding = "UTF-8"//在java编译，doc，测试三个阶段的任意时刻，编码为utf8
+
+task "create-dirs" << {
+    sourceSets*.java.srcDirs*.each{
+        it.mkdirs()
+    }
+    sourceSets*.resources.srcDirs*.each{
+        it.mkdirs()
+    }
+}
